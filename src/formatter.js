@@ -74,7 +74,12 @@ function Formatter(el, opts) {
   utils.addListener(self.el, 'paste', function (evt) {
     self._paste(evt);
   });
-
+  utils.addListener(self.el, 'focus', function (evt) {
+    self.opts.prevValue = self.el.value;
+  });
+  utils.addListener(self.el, 'blur', function (evt) {
+    self._blur(evt)
+  });
   // Persistence
   if (self.opts.persistent) {
     // Format on start
@@ -219,11 +224,31 @@ Formatter.prototype._focus = function () {
 
 //
 // @private
+// Handle called on blur event.
+//
+Formatter.prototype._blur = function () {
+  var self = this;
+  // Compare value from last focus event and value after blur
+  // if they don't match trigger the 'change' event
+  if (self.el.value !== self.opts.prevValue) {
+    // Custom event matching 'change' event
+    // Dispatching this will trigger native 'change' listeners
+    eventChange = new Event('change');
+    self.el.dispatchEvent(eventChange);
+  }
+};
+
+//
+// @private
 // Using the provided key information, alter el value.
 //
 Formatter.prototype._processKey = function (chars, delKey, ignoreCaret) {
   // Get current state
   this.sel = inptSel.get(this.el);
+  // Store value twice
+  // because this.val will continue to be processed
+  // and this.oldVal will stay the same until the next _processKey
+  this.oldVal = this.el.value;
   this.val = this.el.value;
 
   // Init values
@@ -260,6 +285,15 @@ Formatter.prototype._processKey = function (chars, delKey, ignoreCaret) {
 
   // Format el.value (also handles updating caret position)
   this._formatValue(ignoreCaret);
+
+  // Compare value before and after _processKey
+  // if they don't match trigger the 'input' event
+  if (this.oldVal !== this.val) {
+    // Custom event matching 'input' event
+    // Dispatching this will trigger native 'input' listeners
+    var eventInput = new Event('input');
+    this.el.dispatchEvent(eventInput);
+  }
 };
 
 //
