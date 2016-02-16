@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <title>Testing Formatter</title>
+  </head>
+  <body> 
+    <div class="demo-input">
+      <div class="input-wrap input-s1 input-white">
+        <input type="text" class="input" id="credit-input" maxlength="19" pattern="\d*">
+      </div>
+    </div>
+    <div class="">
+      <div class="input-wrap input-s1 input-white">
+        <input type="text" class="input" id="test-input" maxlength="19" pattern="\d*">
+      </div>
+    </div>
+  </body>
+
+  <script type="text/javascript">
+    (function() {
+        Element.prototype._addEventListener = Element.prototype.addEventListener;
+        Element.prototype.addEventListener = function(a,b,c) { if(c==undefined) c=false;
+          this._addEventListener(a,b,c);
+          if(!this.eventListenerList) this.eventListenerList = {};
+          if(!this.eventListenerList[a]) this.eventListenerList[a] = [];
+          //this.removeEventListener(a,b,c); // TODO - handle duplicates.. 
+          this.eventListenerList[a].push({listener:b,useCapture:c});
+        };
+
+        Element.prototype.getEventListeners = function(a){
+          if(!this.eventListenerList) this.eventListenerList = {};
+          if(a==undefined) return this.eventListenerList;
+          return this.eventListenerList[a];
+        };
+        Element.prototype.clearEventListeners = function(a){
+          if(!this.eventListenerList) this.eventListenerList = {};
+          if(a==undefined){
+            for(var x in (this.getEventListeners())) this.clearEventListeners(x);
+              return;
+          }
+          var el = this.getEventListeners(a);
+          if(el==undefined) return;
+          for(var i = el.length - 1; i >= 0; --i) {
+            var ev = el[i];
+            this.removeEventListener(a, ev.listener, ev.useCapture);
+          }
+        };
+
+
+        Element.prototype._removeEventListener = Element.prototype.removeEventListener;
+        Element.prototype.removeEventListener = function(a,b,c) { if(c==undefined) c=false;
+          this._removeEventListener(a,b,c);
+            if(!this.eventListenerList) this.eventListenerList = {};
+            if(!this.eventListenerList[a]) this.eventListenerList[a] = [];
+            // find the event in the list
+            for(var i=0;i<this.eventListenerList[a].length;i++){
+                if(this.eventListenerList[a][i].listener==b, this.eventListenerList[a][i].useCapture==c){ // hmm..
+                    this.eventListenerList[a].splice(i, 1);
+                    break;
+                }
+            }
+          if(this.eventListenerList[a].length==0) delete this.eventListenerList[a];
+        };
+
+      })();
+  </script>
+
+  <script type="text/javascript" src="javascripts/formatter.js"></script>
+  <script>
+      var creditInput = document.getElementById('credit-input');
+      var myFunc = function(){
+        var new_input = document.createElement('p');
+        new_input.textContent = creditInput.value;
+        document.body.appendChild(new_input);
+        console.log("working");
+      }
+      creditInput.addEventListener('change', myFunc);
+
+      var testInput = document.getElementById('test-input');
+      var myFunc2 = function(event){
+        var new_input = document.createElement('p');
+      }
+      var myFunc3 = function(event){
+        var new_input = document.createElement('p');
+        console.log("test test");
+      }
+      testInput.addEventListener('keypress', myFunc2);
+      testInput.addEventListener('change', myFunc3);
+
+      if (creditInput) {
+        new Formatter(creditInput, {
+            'pattern': '{{9999}}-{{9999}}-{{9999}}-{{9999}}',
+        });
+      }
+    </script>
+</html>
