@@ -233,8 +233,12 @@ Formatter.prototype._blur = function () {
   if (self.el.value !== self.opts.prevValue) {
     // Custom event matching 'change' event
     // Dispatching this will trigger native 'change' listeners
-    eventChange = new Event('change');
-    self.el.dispatchEvent(eventChange);
+    if ('createEvent' in document) {
+      var eventChange = new Event('change');
+      self.el.dispatchEvent(eventChange);
+    } else {
+      self.el.fireEvent('onchange');
+    }
   }
 };
 
@@ -291,8 +295,12 @@ Formatter.prototype._processKey = function (chars, delKey, ignoreCaret) {
   if (this.oldVal !== this.val) {
     // Custom event matching 'input' event
     // Dispatching this will trigger native 'input' listeners
-    var eventInput = new Event('input');
-    this.el.dispatchEvent(eventInput);
+    if ('createEvent' in document) {
+      var eventInput = new Event('input');
+      this.el.dispatchEvent(eventInput);
+    } else {
+      this.el.fireEvent('oninput');
+    }
   }
 };
 
